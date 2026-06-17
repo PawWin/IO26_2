@@ -1,6 +1,6 @@
 # Symulowane wyżarzanie dla TSP
 
-Projekt realizuje zadanie: ręczna implementacja algorytmu symulowanego wyżarzania z wizualizacją i symulacją krokową dla pięciu instancji z TSPLIB.
+Projekt realizuje implementacje algorytmu symulowanego wyżarzania z wizualizacją i symulacją krokową dla pięciu instancji z TSPLIB.
 
 ## Uruchomienie
 
