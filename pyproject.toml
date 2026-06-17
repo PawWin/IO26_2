@@ -1,0 +1,20 @@
+[project]
+name = "simulated-annealing-tsp"
+version = "0.1.0"
+description = "Simulated annealing for TSPLIB TSP instances with step-by-step Plotly visualization"
+readme = "README.md"
+authors = [
+    { name = "PawWin", email = "winkler.pawel2@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "plotly>=6.8.0",
+]
+
+[project.scripts]
+simulated-annealing-tsp = "simulated_annealing_tsp:main"
+sa-tsp = "simulated_annealing_tsp:main"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
