@@ -28,4 +28,4 @@ uv run sa-tsp --all --iterations 20000 --frame-stride 50 --output results
 - wynikowy plik HTML z Plotly.js, animacją, suwakiem iteracji i przyciskami Play/Pause;
 - wizualizacja najlepszej znalezionej trasy w kolejnych krokach algorytmu.
 
-Plotly jest używane wyłącznie do eksportu wizualizacji HTML. Algorytm, parser TSPLIB i operatory zmiany trasy są zaimplementowane ręcznie.
+Plotly jest używane wyłącznie do eksportu wizualizacji HTML.
