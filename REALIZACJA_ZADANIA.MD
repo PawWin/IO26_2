@@ -15,13 +15,13 @@ z plików TSPLIB `.tsp`, buduje macierz odległości między miastami, uruchamia
 algorytm optymalizacyjny, a następnie zapisuje wynik w postaci interaktywnego
 raportu HTML.
 
-W projekcie przygotowano obsługę pięciu instancji:
+W projekcie przygotowano obsługę pięciu instancji z co najmniej 300 miastami:
 
-- `berlin52`
-- `eil51`
-- `st70`
-- `pr76`
-- `kroA100`
+- `lin318`
+- `pcb442`
+- `d493`
+- `rat575`
+- `pr1002`
 
 ## Krótki opis realizacji
 
@@ -30,19 +30,16 @@ Główna logika algorytmu znajduje się w module
 odległości są zaimplementowane w `src/simulated_annealing_tsp/tsp.py`, natomiast
 operatory modyfikujące trasę znajdują się w `src/simulated_annealing_tsp/operators.py`.
 
-Algorytm rozpoczyna działanie od utworzenia trasy początkowej metodą najbliższego
-sąsiada. Następnie w każdej iteracji losowany jest jeden z operatorów zmiany trasy:
+Algorytm rozpoczyna działanie od utworzenia losowej trasy początkowej.
+Następnie w każdej iteracji losowany jest jeden z operatorów zmiany trasy:
 
 - zamiana dwóch miast (`swap`),
+- ruch 2-opt odwracający fragment trasy po usunięciu dwóch krawędzi (`two_opt`),
 - odwrócenie fragmentu trasy (`reverse`),
-- przeniesienie jednego miasta w inne miejsce (`insert`),
-- wymieszanie fragmentu trasy (`scramble`),
-- przeniesienie bloku miast (`block_insert`).
+- przeniesienie jednego miasta w inne miejsce (`insert`).
 
-
-Po zakończeniu właściwego symulowanego wyżarzania program może dodatkowo wykonać
-końcowe dopracowanie najlepszej trasy metodą `2-opt`. Na końcu generowany jest
-raport HTML z animacją kolejnych kroków oraz tabelą historii działania algorytmu.
+Po zakończeniu symulowanego wyżarzania generowany jest raport HTML z animacją
+kolejnych kroków oraz tabelą historii działania algorytmu.
 
 ## Pseudokod algorytmu
 
@@ -51,8 +48,7 @@ wczytaj plik TSPLIB
 odczytaj listę miast i ich współrzędne
 zbuduj macierz odległości między każdą parą miast
 
-wybierz losowe miasto startowe
-utwórz trasę początkową metodą najbliższego sąsiada
+utwórz losową permutację miast jako trasę początkową
 oblicz długość trasy początkowej
 
 aktualna_trasa = trasa_początkowa
@@ -92,10 +88,6 @@ dopóki iteracja < maksymalna_liczba_iteracji
     temperatura = temperatura * współczynnik_chłodzenia
     iteracja = iteracja + 1
 
-jeżeli włączono końcowe dopracowanie:
-    wykonuj ulepszenia 2-opt na najlepszej trasie,
-    dopóki można skrócić trasę albo osiągnięto limit przebiegów
-
 zapisz najlepszą znalezioną trasę i historię działania do raportu HTML
 ```
 
@@ -108,6 +100,6 @@ Dane wyjściowe to pliki HTML w katalogu `results/`. Raport zawiera:
 - nazwę instancji,
 - liczbę miast,
 - najlepszą znalezioną długość trasy,
+- znane optimum i procentową odległość znalezionych kosztów od optimum,
 - animację najlepszej trasy w kolejnych krokach,
 - tabelę z historią iteracji, użytymi operatorami, zmianą kosztu i temperaturą.
-

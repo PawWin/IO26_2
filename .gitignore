@@ -6,6 +6,12 @@ dist/
 wheels/
 *.egg-info
 
+# Generated reports
+results/
+
+# Downloaded TSPLIB data
+data/*.tsp
+
 # Virtual environments
 .venv
 

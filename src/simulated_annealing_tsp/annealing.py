@@ -53,7 +53,7 @@ class SimulatedAnnealingTsp:
         self.matrix = matrix
         self.config = config
         self.rng = Random(config.seed)
-        initial_route = nearest_neighbor_route(matrix, self.rng.randrange(len(matrix)))
+        initial_route = random_route(len(matrix), self.rng)
         initial_distance = route_length(initial_route, matrix)
         self.state = AnnealingState(
             route=initial_route,
@@ -113,51 +113,6 @@ class SimulatedAnnealingTsp:
                 break
         return result
 
-    def two_opt_polish(self, max_passes: int = 50) -> None:
-        for _ in range(max_passes):
-            improved = False
-            route = self.state.best_route
-            size = len(route)
-            for i in range(size - 1):
-                for j in range(i + 2, size):
-                    if i == 0 and j == size - 1:
-                        continue
-                    gain = self._two_opt_gain(route, i, j)
-                    if gain < 0:
-                        route[i + 1 : j + 1] = reversed(route[i + 1 : j + 1])
-                        self.state.best_distance += gain
-                        self.state.current_distance = self.state.best_distance
-                        self.state.route = route.copy()
-                        self.state.best_route = route.copy()
-                        self._append_polish_step(i, j, gain)
-                        improved = True
-                        break
-                if improved:
-                    break
-            if not improved:
-                return
-
-    def _two_opt_gain(self, route: list[int], i: int, j: int) -> int:
-        a, b = route[i], route[(i + 1) % len(route)]
-        c, d = route[j], route[(j + 1) % len(route)]
-        return self.matrix[a][c] + self.matrix[b][d] - self.matrix[a][b] - self.matrix[c][d]
-
-    def _append_polish_step(self, i: int, j: int, gain: int) -> None:
-        self.state.iteration += 1
-        row: dict[str, int | float | str | bool | list[int]] = {
-            "iteration": self.state.iteration,
-            "temperature": self.state.temperature,
-            "operator": f"2-opt({i + 1}:{j})",
-            "accepted": True,
-            "delta": gain,
-            "current_distance": self.state.current_distance,
-            "best_distance": self.state.best_distance,
-            "acceptance_probability": 1.0,
-            "current_route": self.state.route.copy(),
-            "best_route": self.state.best_route.copy(),
-        }
-        self.state.history.append(row)
-
     @staticmethod
     def acceptance_probability(delta: int, temperature: float) -> float:
         if delta <= 0:
@@ -192,13 +147,7 @@ class SimulatedAnnealingTsp:
         )
 
 
-def nearest_neighbor_route(matrix: list[list[int]], start: int = 0) -> list[int]:
-    unvisited = set(range(len(matrix)))
-    route = [start]
-    unvisited.remove(start)
-    while unvisited:
-        current = route[-1]
-        next_city = min(unvisited, key=lambda city: matrix[current][city])
-        route.append(next_city)
-        unvisited.remove(next_city)
+def random_route(size: int, rng: Random) -> list[int]:
+    route = list(range(size))
+    rng.shuffle(route)
     return route

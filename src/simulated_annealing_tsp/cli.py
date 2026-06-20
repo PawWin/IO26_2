@@ -15,7 +15,7 @@ DATA_DIR = ROOT / "data"
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Symulowane wyżarzanie dla instancji TSPLIB TSP.")
-    parser.add_argument("--instance", default="berlin52", help="Nazwa pliku z data/ bez .tsp albo ścieżka do .tsp.")
+    parser.add_argument("--instance", default="lin318", help="Nazwa pliku z data/ bez .tsp albo ścieżka do .tsp.")
     parser.add_argument("--iterations", type=int, default=20_000)
     parser.add_argument("--seed", type=int, default=3)
     parser.add_argument("--initial-temperature", type=float, default=850.0)
@@ -23,7 +23,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--minimum-temperature", type=float, default=0.01)
     parser.add_argument("--operators", nargs="+", choices=sorted(OPERATORS), default=list(OPERATORS))
     parser.add_argument("--frame-stride", type=int, default=50, help="Co którą iterację zapisać jako klatkę HTML.")
-    parser.add_argument("--no-polish", action="store_true", help="Nie wykonuj końcowego dopracowania 2-opt.")
     parser.add_argument("--no-report", action="store_true", help="Uruchom obliczenia bez generowania raportów HTML.")
     parser.add_argument("--output", type=Path, help="Ścieżka wynikowego pliku HTML.")
     parser.add_argument("--all", action="store_true", help="Wygeneruj raporty HTML dla wszystkich plików z data/.")
@@ -64,8 +63,6 @@ def main(argv: list[str] | None = None) -> None:
             ),
         )
         engine.run(args.iterations)
-        if not args.no_polish:
-            engine.two_opt_polish()
         elapsed = perf_counter() - started_at
         if args.no_report:
             print(f"{instance.name}: najlepszy_koszt={engine.state.best_distance}, czas={_format_seconds(elapsed)}")

@@ -21,6 +21,14 @@ BEST = "#c6281d"
 PANEL = "#fffaf1"
 BORDER = "#d0bea7"
 
+OPTIMAL_TOUR_LENGTHS = {
+    "lin318": 42029,
+    "pcb442": 50778,
+    "d493": 35002,
+    "rat575": 6773,
+    "pr1002": 259045,
+}
+
 
 @dataclass(frozen=True)
 class ReportRun:
@@ -104,7 +112,7 @@ def _run_section(run: ReportRun, index: int, include_plotlyjs: bool) -> str:
             <h3>Wykres kosztu trasy i temperatury</h3>
             <div class="plot-wrap plot-wrap-compact">{progress_html}</div>
             {_operator_table(run.state)}
-            {_steps_table(prefix, sampled_history)}
+            {_steps_table(prefix, run.instance, sampled_history)}
         </section>
     """
 
@@ -336,7 +344,9 @@ def _document(title: str, subtitle: str, sections: list[str]) -> str:
                     <td>${{decisionCell(row)}}</td>
                     <td>${{row.delta}}</td>
                     <td>${{row.current_distance}}</td>
+                    <td>${{row.current_optimum_gap}}</td>
                     <td>${{row.best_distance}}</td>
+                    <td>${{row.best_optimum_gap}}</td>
                     <td>${{Number(row.temperature).toFixed(4)}}</td>
                 `;
                 body.appendChild(tr);
@@ -345,7 +355,7 @@ def _document(title: str, subtitle: str, sections: list[str]) -> str:
 
             function clearSteps() {{
                 inserted.clear();
-                body.innerHTML = "<tr class='empty-row'><td colspan='7'>Uruchom animację albo przesuń suwak, aby dodawać kroki.</td></tr>";
+                body.innerHTML = "<tr class='empty-row'><td colspan='9'>Uruchom animację albo przesuń suwak, aby dodawać kroki.</td></tr>";
             }}
 
             clearButton.addEventListener("click", clearSteps);
@@ -563,6 +573,7 @@ def _route_visual_frames(
 
 def _summary_table(instance: TspInstance, state: AnnealingState) -> str:
     initial = _initial_distance(state.history)
+    optimum = _optimal_tour_length(instance)
     accepted = sum(1 for row in state.history if bool(row["accepted"]))
     all_steps = len(state.history)
     acceptance_rate = accepted / all_steps if all_steps else 0.0
@@ -572,6 +583,8 @@ def _summary_table(instance: TspInstance, state: AnnealingState) -> str:
         ("Liczba iteracji", str(state.iteration)),
         ("Koszt początkowy", str(initial)),
         ("Najlepszy znaleziony koszt", str(state.best_distance)),
+        ("Optimum", str(optimum) if optimum is not None else "brak danych"),
+        ("Odległość najlepszego od optimum", _optimum_gap(state.best_distance, optimum)),
         ("Poprawa względem startu", _percent(improvement)),
         ("Zaakceptowane ruchy", f"{accepted} / {all_steps}"),
         ("Odsetek akceptacji", _percent(acceptance_rate)),
@@ -631,7 +644,8 @@ def _operator_table(state: AnnealingState) -> str:
     """
 
 
-def _steps_table(prefix: str, sampled_history: list[HistoryRow]) -> str:
+def _steps_table(prefix: str, instance: TspInstance, sampled_history: list[HistoryRow]) -> str:
+    optimum = _optimal_tour_length(instance)
     table_rows = [
         {
             "iteration": row["iteration"],
@@ -639,7 +653,9 @@ def _steps_table(prefix: str, sampled_history: list[HistoryRow]) -> str:
             "accepted": row["accepted"],
             "delta": row["delta"],
             "current_distance": row["current_distance"],
+            "current_optimum_gap": _optimum_gap(int(row["current_distance"]), optimum),
             "best_distance": row["best_distance"],
+            "best_optimum_gap": _optimum_gap(int(row["best_distance"]), optimum),
             "temperature": round(float(row["temperature"]), 4),
         }
         for row in sampled_history
@@ -666,12 +682,14 @@ def _steps_table(prefix: str, sampled_history: list[HistoryRow]) -> str:
                             <th>Decyzja</th>
                             <th>Delta</th>
                             <th>Aktualna</th>
+                            <th>Aktualna do optimum</th>
                             <th>Najlepsza</th>
+                            <th>Najlepsza do optimum</th>
                             <th>Temperatura</th>
                         </tr>
                     </thead>
                     <tbody data-steps-body>
-                        <tr class="empty-row"><td colspan="7">Uruchom animację albo przesuń suwak, aby dodawać kroki.</td></tr>
+                        <tr class="empty-row"><td colspan="9">Uruchom animację albo przesuń suwak, aby dodawać kroki.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -762,6 +780,16 @@ def _operator_name(value: str) -> str:
 
 def _percent(value: float) -> str:
     return f"{value * 100:.2f}%"
+
+
+def _optimal_tour_length(instance: TspInstance) -> int | None:
+    return OPTIMAL_TOUR_LENGTHS.get(instance.name)
+
+
+def _optimum_gap(distance: int, optimum: int | None) -> str:
+    if optimum is None:
+        return "brak danych"
+    return _percent((distance - optimum) / optimum)
 
 
 def _title(instance_name: str, row: HistoryRow) -> str:

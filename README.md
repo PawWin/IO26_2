@@ -6,10 +6,14 @@ Projekt realizuje implementacje algorytmu symulowanego wyżarzania z wizualizacj
 
 ```bash
 uv sync
-uv run sa-tsp --instance berlin52 --iterations 20000 --output results/berlin52.html
+uv run python scripts/download_tsp_data.py
+uv run sa-tsp --instance lin318 --iterations 20000 --output results/lin318.html
 ```
 
 Wygenerowany plik HTML otwórz w przeglądarce.
+
+Skrypt `scripts/download_tsp_data.py` pobiera brakujące instancje TSPLIB do
+`data/` i pomija pliki, które już istnieją.
 
 Wygenerowanie raportów dla wszystkich pięciu zestawów:
 
@@ -32,13 +36,15 @@ oraz czas obliczeń.
 ## Zakres
 
 - parser plików TSPLIB `.tsp`;
-- pięć gotowych zestawów danych w `data/`: `berlin52`, `eil51`, `st70`, `kroA100`, `pr76`;
+- pięć gotowych zestawów danych w `data/` z co najmniej 300 miastami:
+  `lin318`, `pcb442`, `d493`, `rat575`, `pr1002`;
 - własna implementacja symulowanego wyżarzania bez bibliotek optymalizacyjnych;
-- pięć operatorów zmiany trasy: `swap`, `reverse`, `insert`, `scramble`, `block_insert`;
-- start z trasy konstrukcyjnej najbliższego sąsiada oraz opcjonalne końcowe dopracowanie `2-opt`;
+- cztery operatory zmiany trasy: `two_opt`, `swap`, `reverse`, `insert`;
+- start z losowej permutacji miast;
 - wynikowy plik HTML z Plotly.js, animacją, suwakiem iteracji i przyciskami Play/Pause;
 - wizualizacja najlepszej znalezionej trasy w kolejnych krokach algorytmu;
 - raport zbiorczy `raport.html` dla wszystkich uruchomionych instancji, zawierający
-  symulacje krokowe, wykresy kosztu i temperatury oraz tabele statystyk.
+  symulacje krokowe, wykresy kosztu i temperatury oraz tabele statystyk,
+  w tym procentową odległość znalezionych kosztów od znanego optimum.
 
 Plotly jest używane wyłącznie do eksportu wizualizacji HTML.

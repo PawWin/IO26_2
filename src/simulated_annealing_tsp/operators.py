@@ -20,6 +20,17 @@ def reverse_segment(route: list[int], rng: Random) -> tuple[list[int], str]:
     return candidate, f"reverse({i}:{j})"
 
 
+def two_opt_move(route: list[int], rng: Random) -> tuple[list[int], str]:
+    candidate = route.copy()
+    size = len(route)
+    while True:
+        i, j = sorted(rng.sample(range(size), 2))
+        if j > i + 1 and not (i == 0 and j == size - 1):
+            break
+    candidate[i + 1 : j + 1] = reversed(candidate[i + 1 : j + 1])
+    return candidate, f"2-opt({i + 1}:{j})"
+
+
 def insert_city(route: list[int], rng: Random) -> tuple[list[int], str]:
     candidate = route.copy()
     i, j = rng.sample(range(len(route)), 2)
@@ -28,31 +39,9 @@ def insert_city(route: list[int], rng: Random) -> tuple[list[int], str]:
     return candidate, f"insert({i}->{j})"
 
 
-def scramble_segment(route: list[int], rng: Random) -> tuple[list[int], str]:
-    candidate = route.copy()
-    i, j = sorted(rng.sample(range(len(route)), 2))
-    segment = candidate[i : j + 1]
-    rng.shuffle(segment)
-    candidate[i : j + 1] = segment
-    return candidate, f"scramble({i}:{j})"
-
-
-def block_insert(route: list[int], rng: Random) -> tuple[list[int], str]:
-    segment_length = rng.randint(2, len(route) - 1)
-    i = rng.randrange(len(route) - segment_length + 1)
-    j = i + segment_length - 1
-    segment = route[i : j + 1]
-    remainder = route[:i] + route[j + 1 :]
-    insertion_points = [index for index in range(len(remainder) + 1) if index != i]
-    k = rng.choice(insertion_points)
-    candidate = remainder[:k] + segment + remainder[k:]
-    return candidate, f"block_insert({i}:{j}->{k})"
-
-
 OPERATORS: dict[str, RouteOperator] = {
+    "two_opt": two_opt_move,
     "swap": swap_cities,
     "reverse": reverse_segment,
     "insert": insert_city,
-    "scramble": scramble_segment,
-    "block_insert": block_insert,
 }
